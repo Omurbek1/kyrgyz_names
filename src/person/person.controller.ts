@@ -22,17 +22,18 @@ export class PersonController {
   constructor(private readonly personService: PersonService) {}
 
   @Get()
-  findAll(): Person[] {
+  @Get()
+  findAll(): Promise<Person[]> {
     return this.personService.findAll();
   }
 
   @Get('favorites')
-  getFavorites() {
+  getFavorites(): Promise<Person[]> {
     console.log('Fetching favorites');
     return this.personService.getFavorites();
   }
   @Get('tags')
-  findByTags(@Query('tags') tags: string): Person[] {
+  findByTags(@Query('tags') tags: string): Promise<Person[]> | Person[] {
     const searchTags = tags.split(','); // Convert comma-separated string to array
     return this.personService.findByTags(searchTags);
   }
@@ -43,7 +44,7 @@ export class PersonController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  create(@Body() createPersonDto: CreatePersonDto): Person {
+  create(@Body() createPersonDto: CreatePersonDto): Promise<Person> {
     return this.personService.create(createPersonDto);
   }
 
@@ -59,7 +60,7 @@ export class PersonController {
   }
 
   @Patch(':id/favorite')
-  toggleFavorite(@Param('id') id: number): Person {
+  toggleFavorite(@Param('id') id: number): Promise<Person> | Person {
     return this.personService.toggleFavorite(id);
   }
 }

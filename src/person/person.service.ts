@@ -2,70 +2,67 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Person } from './person.entity';
 import { UpdatePersonDto } from './update-person.dto';
-
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 @Injectable()
 export class PersonService {
-  private readonly persons: Person[] = [];
+  constructor(
+    @InjectRepository(Person)
+    private personRepository: Repository<Person>,
+  ) {}
+
   private currentId = 0;
 
-  findAll(): Person[] {
-    return this.persons;
+  async findAll(): Promise<Person[]> {
+    return await this.personRepository.find();
   }
 
-  findOne(id: number): Person {
-    const person = this.persons.find((person) => person.id === id);
+  async findOne(id: number): Promise<Person> {
+    const person = await this.personRepository.findOneBy({ id });
     if (!person) {
-      throw new NotFoundException(`Person with ID "${id}" not found`);
+      throw new NotFoundException(`Person with ID ${id} not found`);
     }
     return person;
   }
 
-  create(personDto: Omit<Person, 'id'>): Person {
-    const newPerson: Person = {
-      id: ++this.currentId,
-      favorite: false,
-      ...personDto,
-    };
-    this.persons.push(newPerson);
-    return newPerson;
+  async create(personDto: Omit<Person, 'id'>): Promise<Person> {
+    const newPerson = this.personRepository.create(personDto);
+    return await this.personRepository.save(newPerson);
   }
 
-  update(id: number, updatePersonDto: UpdatePersonDto): Person {
-    const personIndex = this.persons.findIndex((person) => person.id === id);
-    if (personIndex === -1) {
+  async update(id: number, updatePersonDto: UpdatePersonDto): Promise<Person> {
+    const person = await this.personRepository.findOneBy({ id });
+    if (!person) {
       throw new NotFoundException(`Person with ID ${id} not found`);
     }
-    this.persons[personIndex] = {
-      ...this.persons[personIndex],
-      ...updatePersonDto,
-    };
-    return this.persons[personIndex];
+    Object.assign(person, updatePersonDto);
+    return await this.personRepository.save(person);
   }
 
-  delete(id: number): void {
-    const personIndex = this.persons.findIndex((person) => person.id === id);
-    if (personIndex === -1) {
-      throw new NotFoundException('Person not found');
-    }
-    this.persons.splice(personIndex, 1);
-  }
-
-  getFavorites(): Person[] {
-    console.log('Filtering favorite persons');
-    return this.persons.filter((person) => person.favorite);
-  }
-  toggleFavorite(id: number): Person {
-    const personIndex = this.persons.findIndex((person) => person.id === id);
-    if (personIndex === -1) {
+  async delete(id: number): Promise<void> {
+    const person = await this.personRepository.findOneBy({ id });
+    if (!person) {
       throw new NotFoundException(`Person with ID ${id} not found`);
     }
-    this.persons[personIndex].favorite = !this.persons[personIndex].favorite;
-    return this.persons[personIndex];
+    await this.personRepository.remove(person);
   }
 
-  findByTags(searchTags: string[]): Person[] {
-    return this.persons.filter((person) =>
-      person.tag.some((tag) => searchTags.includes(tag)),
-    );
+  async getFavorites(): Promise<Person[]> {
+    return this.personRepository.find({ where: { favorite: true } });
+  }
+  async toggleFavorite(id: number): Promise<Person> {
+    const person = await this.personRepository.findOneBy({ id });
+    if (!person) {
+      throw new NotFoundException(`Person with ID ${id} not found`);
+    }
+    person.favorite = !person.favorite;
+    return await this.personRepository.save(person);
+  }
+
+  async findByTags(searchTags: string[]): Promise<Person[]> {
+    return this.personRepository
+      .createQueryBuilder('person')
+      .where('person.tags @> ARRAY[:...tags]', { tags: searchTags })
+      .getMany();
   }
 }
