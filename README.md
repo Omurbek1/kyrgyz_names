@@ -1,5 +1,5 @@
 1) pleas add .env variables and files to the environment 
-DATABASE_HOST=localhost
+<p align="center">DATABASE_HOST=localhost</p>
 DATABASE_PORT=5432
 DATABASE_USERNAME=
 DATABASE_PASSWORD=
