@@ -5,7 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  isString,
+  
 } from 'class-validator';
 
 export class CreatePersonDto {
