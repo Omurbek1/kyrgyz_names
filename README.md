@@ -1,10 +1,10 @@
 1) pleas add .env variables and files to the environment 
 <p align="center">DATABASE_HOST=localhost</p>
-DATABASE_PORT=5432
-DATABASE_USERNAME=
-DATABASE_PASSWORD=
-DATABASE_NAME=
-DATABASE_SYNCHRONIZE=true
+<p align="center">DATABASE_PORT=5432t</p>
+<p align="center">DATABASE_USERNAME=t</p>
+<p align="center">DATABASE_PASSWORD=t</p>
+<p align="center">DATABASE_NAME=t</p>
+<p align="center">DATABASE_SYNCHRONIZE=truet</p>
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
